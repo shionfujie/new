@@ -13,7 +13,7 @@ const visualStudioCode = "Visual Studio Code"
 
 func main() {
 	if len(os.Args) < 2 {
-		fmt.Println("fatal: No file name specified")
+		fmt.Println("new sh: No file name specified")
 		os.Exit(1)
 	}
 	fn := path.Join(bin, os.Args[1])
