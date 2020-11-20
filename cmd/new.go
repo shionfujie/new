@@ -16,6 +16,10 @@ func main() {
 
 	n := os.Args[1]
 	p := path.Join(bin, os.Args[1])
+	if _, err := os.Stat(p); err == nil {
+		fmt.Printf("new sh: %s: File exists\n", n)
+		os.Exit(1)
+	}
 	err := ioutil.WriteFile(p, []byte("#!/bin/bash\n\n"), 0744)
 	requireNoError(err, "new sh: %s: Failed to create an shell script executable", n)
 	err = exec.Command("open", "-a", visualStudioCode, p).Run()
