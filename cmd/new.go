@@ -12,17 +12,23 @@ const bin = "/Users/shion.t.fujie/Desktop/room of machinery/bin"
 const visualStudioCode = "Visual Studio Code"
 
 func main() {
-	if len(os.Args) < 2 {
-		fmt.Println("new sh: No file name specified")
+	require(len(os.Args) > 1, "new sh: No file name specified")
+
+	n := os.Args[1]
+	p := path.Join(bin, os.Args[1])
+	err := ioutil.WriteFile(p, []byte("#!/bin/bash\n\n"), 0744)
+	requireNoError(err, "new sh: %s: Failed to create an shell script executable", n)
+	err = exec.Command("open", "-a", visualStudioCode, p).Run()
+	requireNoError(err, "new sh: %s: Failed to open with %s", n, visualStudioCode)
+}
+
+func require(b bool, format string, a ...interface{}) {
+	if !b {
+		fmt.Printf(format + "\n", a...)
 		os.Exit(1)
 	}
-	fn := path.Join(bin, os.Args[1])
-	if err := ioutil.WriteFile(fn, []byte("#!/bin/bash\n\n"), 0744); err != nil {
-		fmt.Printf("new sh: %s: Failed to initialize an shell script executable", fn)
-		os.Exit(1)
-	}
-	if err := exec.Command("open", "-a", visualStudioCode, fn).Run(); err != nil {
-		fmt.Printf("new sh: %s: Failed to open with %s", fn, visualStudioCode)
-		os.Exit(1)
-	}
+}
+
+func requireNoError(err error, format string, a ...interface{}) {
+	require(err == nil, format, a...)
 }
