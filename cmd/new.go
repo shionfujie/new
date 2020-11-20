@@ -23,5 +23,6 @@ func main() {
 	}
 	if err := exec.Command("open", "-a", visualStudioCode, fn).Run(); err != nil {
 		fmt.Printf("new sh: %s: Failed to open with %s", fn, visualStudioCode)
+		os.Exit(1)
 	}
 }
