@@ -31,6 +31,11 @@ func main() {
 		fmt.Fprintf(logger.O, "A shell script executable has been created at '%s'\n", p) // Prints without the predefined format
 		err = exec.Command("open", "-a", visualStudioCode, p).Run()
 		logger.FatalfIfError(err, " %s: Failed to open with %s", n, visualStudioCode)
+	case "go-cmd":
+		logger.SetPrefix("new go-cmd: ")
+		logger.FatalfIf(len(os.Args) < 3, "No command name specified. Specify a command name.")
+		n :=os.Args[2]
+		logger.Printf("TODO: Create %s", n)
 	default:
 		logger.Fatalf("%s: No such subcommand", subcommand)
 	}
