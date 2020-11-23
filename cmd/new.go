@@ -1,6 +1,8 @@
 package main
 
 import (
+	"fmt"
+	"io"
 	"log"
 	"io/ioutil"
 	"os"
@@ -12,7 +14,7 @@ const bin = "/Users/shion.t.fujie/Desktop/room of machinery/bin"
 const visualStudioCode = "Visual Studio Code"
 
 func main() {
-	logger := &sLogger{log.New(os.Stdout, "new: ", 0)}
+	logger := New(os.Stdout, "new: ", 0)
 
 	logger.FatalfIf(len(os.Args) < 2, "No subcommand specified")
 	subcommand := os.Args[1]
@@ -26,6 +28,7 @@ func main() {
 		logger.FatalfIf(s != nil, "%s: File exists", n)
 		err := ioutil.WriteFile(p, []byte("#!/bin/bash\n\n"), 0744)
 		logger.FatalfIfError(err, "%s: Failed to create an shell script executable", n)
+		fmt.Fprintf(logger.O, "At %s\n", p) // Prints without the predefined format
 		err = exec.Command("open", "-a", visualStudioCode, p).Run()
 		logger.FatalfIfError(err, " %s: Failed to open with %s", n, visualStudioCode)
 	default:
@@ -35,6 +38,11 @@ func main() {
 
 type sLogger struct {
 	*log.Logger
+	O io.Writer
+}
+
+func New(out io.Writer, prefix string, flag int) *sLogger {
+	return &sLogger{log.New(out, prefix, flag), out}
 }
 
 func (l *sLogger) FatalfIf(b bool, format string, a ...interface{}) {
