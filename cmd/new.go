@@ -63,6 +63,9 @@ func main() {
 		logger.FatalfIfError(err, "%s: Failed to create a main file at '%s', ")
 
 		fmt.Fprintln(logger.O, "Have created a command-line project. Strive to code!!!")
+
+		exec.Command("open", "-a", visualStudioCode, "../../" + n).Run() // Try to open the project
+		exec.Command("open", "-a", visualStudioCode, n + ".go").Run() 
 	default:
 		logger.Fatalf("%s: No such subcommand", subcommand)
 	}
