@@ -3,8 +3,8 @@ package main
 import (
 	"fmt"
 	"io"
-	"log"
 	"io/ioutil"
+	"log"
 	"os"
 	"os/exec"
 	"path"
@@ -28,7 +28,7 @@ func main() {
 		logger.FatalfIf(s != nil, "%s: File exists", n)
 		err := ioutil.WriteFile(p, []byte("#!/bin/bash\n\n"), 0744)
 		logger.FatalfIfError(err, "%s: Failed to create an shell script executable", n)
-		fmt.Fprintf(logger.O, "At %s\n", p) // Prints without the predefined format
+		fmt.Fprintf(logger.O, "A shell script executable has been created at '%s'\n", p) // Prints without the predefined format
 		err = exec.Command("open", "-a", visualStudioCode, p).Run()
 		logger.FatalfIfError(err, " %s: Failed to open with %s", n, visualStudioCode)
 	default:
