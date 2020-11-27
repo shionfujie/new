@@ -30,15 +30,13 @@ const chromeThemeManifestTemplate = `{
 	"manifest_version": 2,
 	"theme": {
 		"colors": {
+			"button_background_hover" : [26, 115, 232],
 			"frame": [255, 255, 255],
 			"toolbar": [255, 255, 255],
-			"ntp_text" : [255, 255, 255],
-			"ntp_link" : [117, 117, 117],
-			"ntp_section" : [207, 0, 192],
-			"button_background" : [255, 0, 255]
-		},
-		"tints": {
-			"buttons": [0, 0, 0.46]
+			"tab_text" : [117, 117, 117],
+			"tab_background_text" : [117, 117, 117],
+			"bookmark_text" : [117, 117, 117],
+			"toolbar_button_icon" : [117, 117, 117]
 		}
 	}
 }
