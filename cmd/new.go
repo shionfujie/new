@@ -33,7 +33,7 @@ func main() {
 	case "sh":
 		logger.SetPrefix("new sh: ")
 		logger.FatalfIf(len(os.Args) < 3, "No file name specified")
-		
+
 		n := os.Args[2]
 		p := path.Join(bin, n)
 		s, _ := os.Stat(p)
@@ -68,13 +68,14 @@ func main() {
 
 		fmt.Fprintln(logger.O, "Have created a command-line project. Strive to code!!!")
 
-		exec.Command("open", "-a", visualStudioCode, "../../" + n).Run() // Try to open the project
-		exec.Command("open", "-a", visualStudioCode, n + ".go").Run() 
+		exec.Command("open", "-a", visualStudioCode, "../../"+n).Run() // Try to open the project
+		exec.Command("open", "-a", visualStudioCode, n+".go").Run()
 	case "chrome-theme":
 		logger.SetPrefix("new chrome-theme: ")
 		logger.FatalfIf(len(os.Args) < 3, "Extension name argument expected")
-
-		logger.Printf("%s to be created...", os.Args[1])
+		
+		ensureFileNotExists(logger, os.Args[2])
+		logger.Printf("%s to be created...", os.Args[2])
 	default:
 		logger.Fatalf("%s: No such subcommand", subcommand)
 	}
@@ -83,6 +84,11 @@ func main() {
 type sLogger struct {
 	*log.Logger
 	O io.Writer
+}
+
+func ensureFileNotExists(logger *sLogger, name string) {
+	s, _ := os.Stat(name)
+	logger.FatalfIf(s != nil, "%s: File exists", name)
 }
 
 func New(out io.Writer, prefix string, flag int) *sLogger {
