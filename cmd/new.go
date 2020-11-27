@@ -36,8 +36,7 @@ func main() {
 
 		n := os.Args[2]
 		p := path.Join(bin, n)
-		s, _ := os.Stat(p)
-		logger.FatalfIf(s != nil, "%s: File exists", n)
+		ensureFileNotExists(logger, p)
 
 		err := ioutil.WriteFile(p, []byte("#!/bin/bash\n\n"), 0744)
 		logger.FatalfIfError(err, "%s: Failed to create an shell script executable", n)
@@ -51,8 +50,7 @@ func main() {
 		logger.FatalfIf(len(os.Args) < 3, "No command name specified. Specify a command name.")
 
 		n := os.Args[2]
-		s, _ := os.Stat(n)
-		logger.FatalfIf(s != nil, "%s: File exists", n)
+		ensureFileNotExists(logger, n)
 
 		os.Mkdir(n, 0744)
 		os.Chdir(n)
@@ -73,7 +71,7 @@ func main() {
 	case "chrome-theme":
 		logger.SetPrefix("new chrome-theme: ")
 		logger.FatalfIf(len(os.Args) < 3, "Extension name argument expected")
-		
+
 		ensureFileNotExists(logger, os.Args[2])
 		logger.Printf("%s to be created...", os.Args[2])
 	default:
