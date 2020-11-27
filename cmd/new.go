@@ -70,6 +70,11 @@ func main() {
 
 		exec.Command("open", "-a", visualStudioCode, "../../" + n).Run() // Try to open the project
 		exec.Command("open", "-a", visualStudioCode, n + ".go").Run() 
+	case "chrome-theme":
+		logger.SetPrefix("new chrome-theme: ")
+		logger.FatalfIf(len(os.Args) < 3, "Extension name argument expected")
+
+		logger.Printf("%s to be created...", os.Args[1])
 	default:
 		logger.Fatalf("%s: No such subcommand", subcommand)
 	}
