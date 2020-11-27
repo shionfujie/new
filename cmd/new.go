@@ -10,7 +10,7 @@ import (
 	"path"
 )
 
-const bin = "/Users/shion.t.fujie/Desktop/room of machinery/bin"
+const bin = "/Users/shion.t.fujie/Desktop/machinery/bin"
 const visualStudioCode = "Visual Studio Code"
 
 const goMainFileTemplate = `package main
@@ -33,13 +33,17 @@ func main() {
 	case "sh":
 		logger.SetPrefix("new sh: ")
 		logger.FatalfIf(len(os.Args) < 3, "No file name specified")
+		
 		n := os.Args[2]
 		p := path.Join(bin, n)
 		s, _ := os.Stat(p)
 		logger.FatalfIf(s != nil, "%s: File exists", n)
+
 		err := ioutil.WriteFile(p, []byte("#!/bin/bash\n\n"), 0744)
 		logger.FatalfIfError(err, "%s: Failed to create an shell script executable", n)
+
 		fmt.Fprintf(logger.O, "A shell script executable has been created at '%s'\n", p) // Prints without the predefined format
+
 		err = exec.Command("open", "-a", visualStudioCode, p).Run()
 		logger.FatalfIfError(err, " %s: Failed to open with %s", n, visualStudioCode)
 	case "go-cmd":
