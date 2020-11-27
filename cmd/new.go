@@ -24,6 +24,26 @@ func main() {
 }
 `
 
+const chromeThemeManifestTemplate = `{
+	"version": "0.1.0",
+	"name": "%s",
+	"manifest_version": 2,
+	"theme": {
+		"colors": {
+			"frame": [255, 255, 255],
+			"toolbar": [255, 255, 255],
+			"ntp_text" : [255, 255, 255],
+			"ntp_link" : [117, 117, 117],
+			"ntp_section" : [207, 0, 192],
+			"button_background" : [255, 0, 255]
+		},
+		"tints": {
+			"buttons": [0, 0, 0.46]
+		}
+	}
+}
+`
+
 func main() {
 	logger := New(os.Stdout, "new: ", 0)
 
@@ -33,11 +53,10 @@ func main() {
 	case "sh":
 		logger.SetPrefix("new sh: ")
 		logger.FatalfIf(len(os.Args) < 3, "No file name specified")
-		
+
 		n := os.Args[2]
 		p := path.Join(bin, n)
-		s, _ := os.Stat(p)
-		logger.FatalfIf(s != nil, "%s: File exists", n)
+		ensureFileNotExists(logger, p)
 
 		err := ioutil.WriteFile(p, []byte("#!/bin/bash\n\n"), 0744)
 		logger.FatalfIfError(err, "%s: Failed to create an shell script executable", n)
@@ -51,8 +70,7 @@ func main() {
 		logger.FatalfIf(len(os.Args) < 3, "No command name specified. Specify a command name.")
 
 		n := os.Args[2]
-		s, _ := os.Stat(n)
-		logger.FatalfIf(s != nil, "%s: File exists", n)
+		ensureFileNotExists(logger, n)
 
 		os.Mkdir(n, 0744)
 		os.Chdir(n)
@@ -68,8 +86,25 @@ func main() {
 
 		fmt.Fprintln(logger.O, "Have created a command-line project. Strive to code!!!")
 
-		exec.Command("open", "-a", visualStudioCode, "../../" + n).Run() // Try to open the project
-		exec.Command("open", "-a", visualStudioCode, n + ".go").Run() 
+		exec.Command("open", "-a", visualStudioCode, "../../"+n).Run() // Try to open the project
+		exec.Command("open", "-a", visualStudioCode, n+".go").Run()
+	case "chrome-theme":
+		logger.SetPrefix("new chrome-theme: ")
+		logger.FatalfIf(len(os.Args) < 3, "Extension name argument expected")
+
+		n := os.Args[2]
+		ensureFileNotExists(logger, n)
+		os.Mkdir(n, 0744)
+		os.Chdir(n)
+
+		json := fmt.Sprintf(chromeThemeManifestTemplate, n)
+		err := ioutil.WriteFile("manifest.json", []byte(json), 0744)
+		logger.FatalfIfError(err, "%s: Failed to create a manifest file for a chrome extension", n)
+
+		logger.Println("Have created a chrome theme. Excited to decorate!!!")
+
+		exec.Command("open", "-a", visualStudioCode, "../../"+n).Run() // Try to open the project
+		exec.Command("open", "-a", visualStudioCode, "manifest.json").Run()
 	default:
 		logger.Fatalf("%s: No such subcommand", subcommand)
 	}
@@ -78,6 +113,11 @@ func main() {
 type sLogger struct {
 	*log.Logger
 	O io.Writer
+}
+
+func ensureFileNotExists(logger *sLogger, name string) {
+	s, _ := os.Stat(name)
+	logger.FatalfIf(s != nil, "%s: File exists", name)
 }
 
 func New(out io.Writer, prefix string, flag int) *sLogger {
