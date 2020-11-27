@@ -24,6 +24,26 @@ func main() {
 }
 `
 
+const chromeThemeManifestTemplate = `{
+	"version": "0.1.0",
+	"name": "%s",
+	"manifest_version": 2,
+	"theme": {
+		"colors": {
+			"frame": [255, 255, 255],
+			"toolbar": [255, 255, 255],
+			"ntp_text" : [255, 255, 255],
+			"ntp_link" : [117, 117, 117],
+			"ntp_section" : [207, 0, 192],
+			"button_background" : [255, 0, 255]
+		},
+		"tints": {
+			"buttons": [0, 0, 0.46]
+		}
+	}
+}
+`
+
 func main() {
 	logger := New(os.Stdout, "new: ", 0)
 
@@ -72,8 +92,19 @@ func main() {
 		logger.SetPrefix("new chrome-theme: ")
 		logger.FatalfIf(len(os.Args) < 3, "Extension name argument expected")
 
-		ensureFileNotExists(logger, os.Args[2])
-		logger.Printf("%s to be created...", os.Args[2])
+		n := os.Args[2]
+		ensureFileNotExists(logger, n)
+		os.Mkdir(n, 0744)
+		os.Chdir(n)
+
+		json := fmt.Sprintf(chromeThemeManifestTemplate, n)
+		err := ioutil.WriteFile("manifest.json", []byte(json), 0744)
+		logger.FatalfIfError(err, "%s: Failed to create a manifest file for a chrome extension", n)
+
+		logger.Println("Have created a chrome theme. Excited to decorate!!!")
+
+		exec.Command("open", "-a", visualStudioCode, "../../"+n).Run() // Try to open the project
+		exec.Command("open", "-a", visualStudioCode, "manifest.json").Run()
 	default:
 		logger.Fatalf("%s: No such subcommand", subcommand)
 	}
