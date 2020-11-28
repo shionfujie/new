@@ -123,14 +123,23 @@ func main() {
 	case "chrome", "chrome-x":
 		logger.SetPrefix("new chrome-x: ")
 		logger.FatalfIf(len(os.Args) < 3, "Extension name argument expected")
-		
+
 		n := os.Args[2]
 		ensureFileNotExists(logger, n)
 
-		jsDir := n + "/js"
-		imagesDir :=  n + "/images"
+		jsDir := n + "/js/"
+		imagesDir := n + "/images/"
 		os.MkdirAll(jsDir, 0744)
 		os.MkdirAll(imagesDir, 0744)
+
+		imagesTemplateDir := os.Getenv("CHROME_HOME") + "/template/images/"
+		images := []string{"get_started16.png", "get_started32.png", "get_started48.png", "get_started128.png"}
+		for _, name := range images {
+			err := copyFile(imagesDir+name, imagesTemplateDir+name)
+			if err != nil {
+				logger.Fatalf("%s: Failed to copy %s to %s: %v\n", n, imagesTemplateDir, imagesDir, err)
+			}
+		}
 
 		json := fmt.Sprintf(chromeXManifestTemplate, n)
 		manifestFile := n + "/manifest.json"
@@ -141,6 +150,28 @@ func main() {
 	default:
 		logger.Fatalf("%s: No such subcommand", subcommand)
 	}
+}
+
+func copyFile(dst, src string) error {
+	in, err := os.Open(src)
+	if err != nil {
+		return fmt.Errorf("Failed to open '%s'", src)
+	}
+	defer in.Close()
+
+	out, err := os.Create(dst)
+	if err != nil {
+		return fmt.Errorf("Failed to create a new file '%s'", dst)
+	}
+
+	if _, err = io.Copy(out, in); err != nil {
+		return fmt.Errorf("Failed to copy %s to %s", src, dst)
+	}
+
+	if err = out.Close(); err != nil {
+		return fmt.Errorf("Failed to copy %s to %s", src, dst)
+	}
+	return nil
 }
 
 type sLogger struct {
