@@ -42,6 +42,23 @@ const chromeThemeManifestTemplate = `{
 }
 `
 
+const chromeXManifestTemplate = `{
+	"name": "%s",
+	"description": "",
+	"version": "0.1.0",
+	"manifest_version": 2,
+	"icons": {
+		"16": "images/get_started16.png",
+		"32": "images/get_started32.png",
+		"48": "images/get_started48.png",
+		"128": "images/get_started128.png"
+	},
+	"permissions": [],
+	"content_scripts": [],
+	"background": {}
+}
+`
+
 func main() {
 	logger := New(os.Stdout, "new: ", 0)
 
@@ -103,6 +120,24 @@ func main() {
 
 		exec.Command("open", "-a", visualStudioCode, "../../"+n).Run() // Try to open the project
 		exec.Command("open", "-a", visualStudioCode, "manifest.json").Run()
+	case "chrome", "chrome-x":
+		logger.SetPrefix("new chrome-x: ")
+		logger.FatalfIf(len(os.Args) < 3, "Extension name argument expected")
+		
+		n := os.Args[2]
+		ensureFileNotExists(logger, n)
+
+		jsDir := n + "/js"
+		imagesDir :=  n + "/images"
+		os.MkdirAll(jsDir, 0744)
+		os.MkdirAll(imagesDir, 0744)
+
+		json := fmt.Sprintf(chromeXManifestTemplate, n)
+		manifestFile := n + "/manifest.json"
+		err := ioutil.WriteFile(manifestFile, []byte(json), 0744)
+		logger.FatalfIfError(err, "%s: Failed to create a manifest file for a chrome extension", n)
+
+		exec.Command("open", "-a", visualStudioCode, n, manifestFile).Run() // Try to open the project
 	default:
 		logger.Fatalf("%s: No such subcommand", subcommand)
 	}
