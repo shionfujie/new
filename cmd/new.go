@@ -13,6 +13,11 @@ import (
 const bin = "/Users/shion.t.fujie/Desktop/machinery/bin"
 const visualStudioCode = "Visual Studio Code"
 
+const fanfareTemplate = `Have created %s!
+At %s
+%s
+`
+
 const goMainFileTemplate = `package main
 
 import (
@@ -116,7 +121,7 @@ func main() {
 		err := ioutil.WriteFile("manifest.json", []byte(json), 0744)
 		logger.FatalfIfError(err, "%s: Failed to create a manifest file for a chrome extension", n)
 
-		logger.Println("Have created a chrome theme. Excited to decorate!!!")
+		fmt.Fprintf(logger.O, fanfareTemplate, "a chrome theme", n, "Excited to decorate!!!")
 
 		exec.Command("open", "-a", visualStudioCode, "../../"+n, "manifest.json").Run() // Try to open the project
 	case "chrome", "chrome-x":
