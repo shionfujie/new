@@ -107,7 +107,7 @@ func main() {
 		logger.SetPrefix("new chrome-theme: ")
 		logger.FatalfIf(len(os.Args) < 3, "Extension name argument expected")
 
-		n := os.Args[2]
+		n := path.Join(os.Getenv("CHROME_HOME"), "src/theme", os.Args[2])
 		ensureFileNotExists(logger, n)
 		os.Mkdir(n, 0744)
 		os.Chdir(n)
