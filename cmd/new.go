@@ -118,8 +118,7 @@ func main() {
 
 		logger.Println("Have created a chrome theme. Excited to decorate!!!")
 
-		exec.Command("open", "-a", visualStudioCode, "../../"+n).Run() // Try to open the project
-		exec.Command("open", "-a", visualStudioCode, "manifest.json").Run()
+		exec.Command("open", "-a", visualStudioCode, "../../"+n, "manifest.json").Run() // Try to open the project
 	case "chrome", "chrome-x":
 		logger.SetPrefix("new chrome-x: ")
 		logger.FatalfIf(len(os.Args) < 3, "Extension name argument expected")
