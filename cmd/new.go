@@ -13,6 +13,11 @@ import (
 const bin = "/Users/shion.t.fujie/Desktop/machinery/bin"
 const visualStudioCode = "Visual Studio Code"
 
+const fanfareTemplate = `Have created %s!
+At %s
+%s
+`
+
 const goMainFileTemplate = `package main
 
 import (
@@ -107,19 +112,19 @@ func main() {
 		logger.SetPrefix("new chrome-theme: ")
 		logger.FatalfIf(len(os.Args) < 3, "Extension name argument expected")
 
-		n := os.Args[2]
-		ensureFileNotExists(logger, n)
-		os.Mkdir(n, 0744)
-		os.Chdir(n)
+		themeName := os.Args[2]
+		projectPath := path.Join(os.Getenv("CHROME_HOME"), "src/theme", themeName)
+		ensureFileNotExists(logger, projectPath)
+		os.Mkdir(projectPath, 0744)
 
-		json := fmt.Sprintf(chromeThemeManifestTemplate, n)
-		err := ioutil.WriteFile("manifest.json", []byte(json), 0744)
-		logger.FatalfIfError(err, "%s: Failed to create a manifest file for a chrome extension", n)
+		manifestPath := path.Join(projectPath, "manifest.json")
+		json := fmt.Sprintf(chromeThemeManifestTemplate, themeName)
+		err := ioutil.WriteFile(manifestPath, []byte(json), 0744)
+		logger.FatalfIfError(err, "%s: Failed to create a manifest file for a chrome extension", themeName)
 
-		logger.Println("Have created a chrome theme. Excited to decorate!!!")
+		fmt.Fprintf(logger.O, fanfareTemplate, "a chrome theme", projectPath, "Excited to decorate!!!")
 
-		exec.Command("open", "-a", visualStudioCode, "../../"+n).Run() // Try to open the project
-		exec.Command("open", "-a", visualStudioCode, "manifest.json").Run()
+		exec.Command("open", "-a", visualStudioCode, projectPath, manifestPath).Run() // Try to open the project
 	case "chrome", "chrome-x":
 		logger.SetPrefix("new chrome-x: ")
 		logger.FatalfIf(len(os.Args) < 3, "Extension name argument expected")
