@@ -187,13 +187,14 @@ func main() {
 		os.Mkdir(projectName, 0744)
 
 		packageJSONPath := path.Join(projectName, "package.json")
-		mainFilePath := path.Join(projectName, "main.js")
 		packageJSON := fmt.Sprintf(puppeteerPackageJSONTemplate, projectName)
-		mainFile := fmt.Sprintf(puppeteerMainFileTemplate, projectName)
 		err := ioutil.WriteFile(packageJSONPath, []byte(packageJSON), 0744)
-		logger.FatalfIfError(err, "%s: Failed to create package.json", packageJSONPath)
+		logger.FatalfIfError(err, "%s: Failed to create package.json", projectName)
+
+		mainFilePath := path.Join(projectName, "main.js")
+		mainFile := fmt.Sprintf(puppeteerMainFileTemplate, projectName)
 		err = ioutil.WriteFile(mainFilePath, []byte(mainFile), 0744)
-		logger.FatalfIfError(err, "%s: Failed to create main.js", mainFile)
+		logger.FatalfIfError(err, "%s: Failed to create main.js", projectName)
 
 		fmt.Fprintf(logger.O, fanfareTemplate, "a web script project with Puppeteer", projectName, "Automate everything!!!")
 
