@@ -64,6 +64,32 @@ const chromeXManifestTemplate = `{
 }
 `
 
+const puppeteerPackageJSONTemplate = `{
+	"name": "%s",
+	"version": "0.0.1",
+	"description": "",
+	"scripts": {
+		"test": "echo \"Error: no test specified\" && exit 1"
+	},
+	"keywords": [],
+	"author": "Shion Fujie (https://github.com/shionfujie)",
+	"dependencies": {
+		"puppeteer": "latest"
+	}
+}
+`
+
+const puppeteerMainFileTemplate = `const puppeteer = require('puppeteer');
+
+(async () => {
+	const browser = await puppeteer.launch();
+	const page = await browser.newPage();
+
+	console.log("Hello, %s!!!")
+
+	await browser.close();
+})();`
+
 func main() {
 	logger := New(os.Stdout, "new: ", 0)
 
@@ -152,6 +178,27 @@ func main() {
 		logger.FatalfIfError(err, "%s: Failed to create a manifest file for a chrome extension", n)
 
 		exec.Command("open", "-a", visualStudioCode, n, manifestFile).Run() // Try to open the project
+	case "puppeteer", "chrome-script", "web-script":
+		logger.SetPrefix("new " + subcommand + ": ")
+		logger.FatalfIf(len(os.Args) < 3, "Project name argument expected")
+
+		projectName := os.Args[2]
+		ensureFileNotExists(logger, projectName)
+		os.Mkdir(projectName, 0744)
+
+		packageJSONPath := path.Join(projectName, "package.json")
+		packageJSON := fmt.Sprintf(puppeteerPackageJSONTemplate, projectName)
+		err := ioutil.WriteFile(packageJSONPath, []byte(packageJSON), 0744)
+		logger.FatalfIfError(err, "%s: Failed to create package.json", projectName)
+
+		mainFilePath := path.Join(projectName, "main.js")
+		mainFile := fmt.Sprintf(puppeteerMainFileTemplate, projectName)
+		err = ioutil.WriteFile(mainFilePath, []byte(mainFile), 0744)
+		logger.FatalfIfError(err, "%s: Failed to create main.js", projectName)
+
+		fmt.Fprintf(logger.O, fanfareTemplate, "a web script project with Puppeteer", projectName, "Automate everything!!!")
+
+		exec.Command("open", "-a", visualStudioCode, projectName, mainFilePath).Run() // Try to open the project
 	default:
 		logger.Fatalf("%s: No such subcommand", subcommand)
 	}
