@@ -179,7 +179,7 @@ func main() {
 
 		exec.Command("open", "-a", visualStudioCode, n, manifestFile).Run() // Try to open the project
 	case "puppeteer", "chrome-script", "web-script":
-		logger.SetPrefix("new puppeteer: ")
+		logger.SetPrefix("new " + subcommand + ": ")
 		logger.FatalfIf(len(os.Args) < 3, "Project name argument expected")
 
 		projectName := os.Args[2]
