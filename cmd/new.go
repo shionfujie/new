@@ -101,7 +101,7 @@ func main() {
 		logger.FatalfIf(len(os.Args) < 3, "No file name specified")
 
 		n := os.Args[2]
-		p := path.Join(bin, n)
+		p := path.Join(os.Getenv("SBIN"), n)
 		ensureFileNotExists(logger, p)
 
 		err := ioutil.WriteFile(p, []byte("#!/bin/bash\n\n"), 0744)
