@@ -90,6 +90,10 @@ const puppeteerMainFileTemplate = `const puppeteer = require('puppeteer');
 	await browser.close();
 })();`
 
+const scalaRootPackage = "io.s5"
+const buildSbtTemplate = `scalaVersion := "2.12.12"`
+const buildPropertiesTemplate = `sbt.version=1.2.8`
+
 func main() {
 	logger := New(os.Stdout, "new: ", 0)
 
@@ -197,6 +201,27 @@ func main() {
 		fmt.Fprintf(logger.O, fanfareTemplate, "a web script project with Puppeteer", projectName, "Automate everything!!!")
 
 		exec.Command("open", "-a", visualStudioCode, projectName, mainFilePath).Run() // Try to open the project
+	case "scala":
+		logger.SetPrefix("new " + subcommand + ": ")
+		logger.FatalfIf(len(os.Args) < 3, "Project name argument expected")
+
+		projectName := os.Args[2]
+		ensureFileNotExists(logger, projectName)
+
+		projectDir := path.Join(projectName, "project")
+		srcDir := path.Join(projectName, "src/main/scala", scalaRootPackage, projectName)
+		os.MkdirAll(projectDir, 0744)
+		os.MkdirAll(srcDir, 0744)
+
+		buildSbtPath := path.Join(projectName, "build.sbt")
+		err := ioutil.WriteFile(buildSbtPath, []byte(buildSbtTemplate), 0744)
+		logger.FatalfIfError(err, "Failed to create build.sbt")
+
+		buildPropertiesPath := path.Join(projectDir, "build.properties")
+		err = ioutil.WriteFile(buildPropertiesPath, []byte(buildPropertiesTemplate), 0744)
+		logger.FatalfIfError(err, "Failed to create build.properties")
+
+		exec.Command("open", "-a", visualStudioCode, projectName, buildSbtPath).Run()
 	default:
 		logger.Fatalf("%s: No such subcommand", subcommand)
 	}
