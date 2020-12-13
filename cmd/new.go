@@ -8,6 +8,7 @@ import (
 	"os"
 	"os/exec"
 	"path"
+	"strings"
 )
 
 const bin = "/Users/shion.t.fujie/Desktop/machinery/bin"
@@ -93,6 +94,11 @@ const puppeteerMainFileTemplate = `const puppeteer = require('puppeteer');
 const scalaRootPackage = "io.s5"
 const buildSbtTemplate = `scalaVersion := "2.12.12"`
 const buildPropertiesTemplate = `sbt.version=1.2.8`
+
+const scalaEntryFileTemplate = `package %s.%s
+
+object %s
+`
 
 func main() {
 	logger := New(os.Stdout, "new: ", 0)
@@ -221,7 +227,13 @@ func main() {
 		err = ioutil.WriteFile(buildPropertiesPath, []byte(buildPropertiesTemplate), 0744)
 		logger.FatalfIfError(err, "Failed to create build.properties")
 
-		exec.Command("open", "-a", visualStudioCode, projectName, buildSbtPath).Run()
+		entryName := strings.Title(projectName)
+		entryFilePath := path.Join(srcDir, entryName+".scala")
+		entryFile := fmt.Sprintf(scalaEntryFileTemplate, scalaRootPackage, projectName, entryName)
+		err= ioutil.WriteFile(entryFilePath, []byte(entryFile), 0744)
+		logger.FatalfIfError(err, "Failed to create an entry file: %s", entryFilePath)
+
+		exec.Command("open", "-a", visualStudioCode, projectName, entryFilePath, buildSbtPath).Run()
 	default:
 		logger.Fatalf("%s: No such subcommand", subcommand)
 	}
