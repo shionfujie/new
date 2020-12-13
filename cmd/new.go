@@ -167,9 +167,7 @@ func main() {
 		images := []string{"get_started16.png", "get_started32.png", "get_started48.png", "get_started128.png"}
 		for _, name := range images {
 			err := copyFile(imagesDir+name, imagesTemplateDir+name)
-			if err != nil {
-				logger.Fatalf("%s: Failed to copy %s to %s: %v\n", n, imagesTemplateDir, imagesDir, err)
-			}
+			logger.FatalfIfError(err, "%s: Failed to copy %s to %s: %v\n", n, imagesTemplateDir, imagesDir, err)
 		}
 
 		json := fmt.Sprintf(chromeXManifestTemplate, n)
