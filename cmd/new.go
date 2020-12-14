@@ -207,7 +207,7 @@ func main() {
 		fmt.Fprintf(logger.O, fanfareTemplate, "a web script project with Puppeteer", projectName, "Automate everything!!!")
 
 		exec.Command("open", "-a", visualStudioCode, projectName, mainFilePath).Run() // Try to open the project
-	case "scala":
+	case "scala", "scala-console":
 		logger.SetPrefix("new " + subcommand + ": ")
 		logger.FatalfIf(len(os.Args) < 3, "Project name argument expected")
 
