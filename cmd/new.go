@@ -4,11 +4,12 @@ import (
 	"fmt"
 	"io"
 	"io/ioutil"
-	"log"
 	"os"
 	"os/exec"
 	"path"
 	"strings"
+
+	"s19f.io/x/log"
 )
 
 const bin = "/Users/shion.t.fujie/Desktop/machinery/bin"
@@ -101,7 +102,7 @@ object %s
 `
 
 func main() {
-	logger := New(os.Stdout, "new: ", 0)
+	logger := log.New(os.Stdout, "new: ", 0)
 
 	logger.FatalfIf(len(os.Args) < 2, "No subcommand specified")
 	subcommand := os.Args[1]
@@ -230,7 +231,7 @@ func main() {
 		entryName := strings.Title(projectName)
 		entryFilePath := path.Join(srcDir, entryName+".scala")
 		entryFile := fmt.Sprintf(scalaEntryFileTemplate, scalaRootPackage, projectName, entryName)
-		err= ioutil.WriteFile(entryFilePath, []byte(entryFile), 0744)
+		err = ioutil.WriteFile(entryFilePath, []byte(entryFile), 0744)
 		logger.FatalfIfError(err, "Failed to create an entry file: %s", entryFilePath)
 
 		exec.Command("open", "-a", visualStudioCode, projectName, entryFilePath, buildSbtPath).Run()
@@ -261,26 +262,7 @@ func copyFile(dst, src string) error {
 	return nil
 }
 
-type sLogger struct {
-	*log.Logger
-	O io.Writer
-}
-
-func ensureFileNotExists(logger *sLogger, name string) {
+func ensureFileNotExists(logger *log.SLogger, name string) {
 	s, _ := os.Stat(name)
 	logger.FatalfIf(s != nil, "%s: File exists", name)
-}
-
-func New(out io.Writer, prefix string, flag int) *sLogger {
-	return &sLogger{log.New(out, prefix, flag), out}
-}
-
-func (l *sLogger) FatalfIf(b bool, format string, a ...interface{}) {
-	if b {
-		l.Fatalf(format+"\n", a...)
-	}
-}
-
-func (l *sLogger) FatalfIfError(err error, format string, a ...interface{}) {
-	l.FatalfIf(err != nil, format, a...)
 }
