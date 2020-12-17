@@ -143,8 +143,7 @@ func main() {
 
 		fmt.Fprintln(logger.O, "Have created a command-line project. Strive to code!!!")
 
-		exec.Command("open", "-a", visualStudioCode, "../../"+n).Run() // Try to open the project
-		exec.Command("open", "-a", visualStudioCode, n+".go").Run()
+		exec.Command("open", "-a", visualStudioCode, "../../"+n, n+".go").Run() // Try to open the project
 	case "chrome-theme":
 		logger.SetPrefix("new chrome-theme: ")
 		logger.FatalfIf(len(os.Args) < 3, "Extension name argument expected")
