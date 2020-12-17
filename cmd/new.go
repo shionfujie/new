@@ -126,24 +126,24 @@ func main() {
 		logger.SetPrefix("new go-cmd: ")
 		logger.FatalfIf(len(os.Args) < 3, "No command name specified. Specify a command name.")
 
-		n := os.Args[2]
-		ensureFileNotExists(logger, n)
+		cmdName := os.Args[2]
+		ensureFileNotExists(logger, cmdName)
 
-		os.Mkdir(n, 0744)
-		os.Chdir(n)
-		goPackage := "s19f.io/cli/" + n
+		os.Mkdir(cmdName, 0744)
+		os.Chdir(cmdName)
+		goPackage := "s19f.io/cli/" + cmdName
 		err := exec.Command("go", "mod", "init", goPackage).Run()
-		logger.FatalfIfError(err, "%s: Failed to create the GO package '%s'", n, goPackage)
+		logger.FatalfIfError(err, "%s: Failed to create the GO package '%s'", cmdName, goPackage)
 
 		os.Mkdir("cmd", 0744)
 		os.Chdir("cmd")
-		code := fmt.Sprintf(goMainFileTemplate, n)
-		err = ioutil.WriteFile(n+".go", []byte(code), 0744)
+		code := fmt.Sprintf(goMainFileTemplate, cmdName)
+		err = ioutil.WriteFile(cmdName+".go", []byte(code), 0744)
 		logger.FatalfIfError(err, "%s: Failed to create a main file at '%s', ")
 
 		fmt.Fprintln(logger.O, "Have created a command-line project. Strive to code!!!")
 
-		exec.Command("open", "-a", visualStudioCode, "../../"+n, n+".go").Run() // Try to open the project
+		exec.Command("open", "-a", visualStudioCode, "../../"+cmdName, cmdName+".go").Run() // Try to open the project
 	case "chrome-theme":
 		logger.SetPrefix("new chrome-theme: ")
 		logger.FatalfIf(len(os.Args) < 3, "Extension name argument expected")
