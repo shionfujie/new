@@ -131,7 +131,7 @@ func main() {
 
 		os.Mkdir(n, 0744)
 		os.Chdir(n)
-		goPackage := "sfujie.io/cli/" + n
+		goPackage := "s19f.io/cli/" + n
 		err := exec.Command("go", "mod", "init", goPackage).Run()
 		logger.FatalfIfError(err, "%s: Failed to create the GO package '%s'", n, goPackage)
 
