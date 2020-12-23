@@ -95,11 +95,22 @@ const puppeteerMainFileTemplate = `const puppeteer = require('puppeteer');
 const scalaRootPackage = "io.s5"
 const buildSbtTemplate = `scalaVersion := "2.12.12"`
 const buildPropertiesTemplate = `sbt.version=1.2.8`
-
+const projectPluginsSbtTemplate = `initialize ~= (_ => sys.props("scala.repl.maxprintstring") = "0" ) // Sets no limit to print a large string`
 const scalaEntryFileTemplate = `package %s.%s
 
 object %s
 `
+const scalafmtConfTemplate = `version = "2.7.4"
+align.preset=most
+maxColumn = 200
+newlines.avoidForSimpleOverflow=[tooLong]`
+const scalaGitignoreTemplate = `target
+.metals
+metals.sbt
+.vscode
+/project/project
+.bloop
+.DS_Store`
 
 func main() {
 	logger := log.New(os.Stdout, "new: ", 0)
@@ -211,6 +222,7 @@ func main() {
 		logger.SetPrefix("new " + subcommand + ": ")
 		logger.FatalfIf(len(os.Args) < 3, "Project name argument expected")
 
+		
 		projectName := os.Args[2]
 		ensureFileNotExists(logger, projectName)
 
@@ -227,13 +239,25 @@ func main() {
 		err = ioutil.WriteFile(buildPropertiesPath, []byte(buildPropertiesTemplate), 0744)
 		logger.FatalfIfError(err, "Failed to create build.properties")
 
-		entryName := strings.Title(projectName)
-		entryFilePath := path.Join(srcDir, entryName+".scala")
-		entryFile := fmt.Sprintf(scalaEntryFileTemplate, scalaRootPackage, projectName, entryName)
-		err = ioutil.WriteFile(entryFilePath, []byte(entryFile), 0744)
-		logger.FatalfIfError(err, "Failed to create an entry file: %s", entryFilePath)
+		pluginsSbtPath := path.Join(projectDir, "plugins.sbt")
+		err = ioutil.WriteFile(pluginsSbtPath, []byte(projectPluginsSbtTemplate), 0744)
+		logger.FatalfIfError(err, "Failed to create plugins.sbt")
 
-		exec.Command("open", "-a", visualStudioCode, projectName, entryFilePath, buildSbtPath).Run()
+		entryName := strings.Title(projectName)
+		entryFilepath := path.Join(srcDir, entryName+".scala")
+		entryFile := fmt.Sprintf(scalaEntryFileTemplate, scalaRootPackage, projectName, entryName)
+		err = ioutil.WriteFile(entryFilepath, []byte(entryFile), 0744)
+		logger.FatalfIfError(err, "Failed to create an entry file: %s", entryFilepath)
+		
+		confFilepath := path.Join(srcDir, ".scalafmt.conf")
+		err = ioutil.WriteFile(confFilepath, []byte(scalafmtConfTemplate), 0744)
+		logger.FatalfIfError(err, "Failed to create .scalafmt.conf")
+		
+		gitignorePath := path.Join(srcDir, ".gitignore")
+		err = ioutil.WriteFile(gitignorePath, []byte(scalaGitignoreTemplate), 0744)
+		logger.FatalfIfError(err, "Failed to create .scalafmt.conf")
+
+		exec.Command("open", "-a", visualStudioCode, projectName, entryFilepath, buildSbtPath).Run()
 	default:
 		logger.Fatalf("%s: No such subcommand", subcommand)
 	}
