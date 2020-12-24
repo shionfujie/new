@@ -230,11 +230,19 @@ func main() {
 		srcDir := path.Join(projectName, "src/main/scala", scalaRootPackage, projectName)
 		os.MkdirAll(projectDir, 0744)
 		os.MkdirAll(srcDir, 0744)
-
+		
 		buildSbtPath := path.Join(projectName, "build.sbt")
 		err := ioutil.WriteFile(buildSbtPath, []byte(buildSbtTemplate), 0744)
 		logger.FatalfIfError(err, "Failed to create build.sbt")
-
+		
+		confFilepath := path.Join(projectName, ".scalafmt.conf")
+		err = ioutil.WriteFile(confFilepath, []byte(scalafmtConfTemplate), 0744)
+		logger.FatalfIfError(err, "Failed to create .scalafmt.conf")
+		
+		gitignorePath := path.Join(projectName, ".gitignore")
+		err = ioutil.WriteFile(gitignorePath, []byte(scalaGitignoreTemplate), 0744)
+		logger.FatalfIfError(err, "Failed to create .scalafmt.conf")
+		
 		buildPropertiesPath := path.Join(projectDir, "build.properties")
 		err = ioutil.WriteFile(buildPropertiesPath, []byte(buildPropertiesTemplate), 0744)
 		logger.FatalfIfError(err, "Failed to create build.properties")
@@ -248,14 +256,6 @@ func main() {
 		entryFile := fmt.Sprintf(scalaEntryFileTemplate, scalaRootPackage, projectName, entryName)
 		err = ioutil.WriteFile(entryFilepath, []byte(entryFile), 0744)
 		logger.FatalfIfError(err, "Failed to create an entry file: %s", entryFilepath)
-		
-		confFilepath := path.Join(srcDir, ".scalafmt.conf")
-		err = ioutil.WriteFile(confFilepath, []byte(scalafmtConfTemplate), 0744)
-		logger.FatalfIfError(err, "Failed to create .scalafmt.conf")
-		
-		gitignorePath := path.Join(srcDir, ".gitignore")
-		err = ioutil.WriteFile(gitignorePath, []byte(scalaGitignoreTemplate), 0744)
-		logger.FatalfIfError(err, "Failed to create .scalafmt.conf")
 
 		exec.Command("open", "-a", visualStudioCode, projectName, entryFilepath, buildSbtPath).Run()
 	default:
