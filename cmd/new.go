@@ -103,7 +103,10 @@ object %s
 const scalafmtConfTemplate = `version = "2.7.4"
 align.preset=most
 maxColumn = 200
-newlines.avoidForSimpleOverflow=[tooLong]`
+newlines.avoidForSimpleOverflow=[tooLong]
+rewrite.rules = [PreferCurlyFors]
+align.arrowEnumeratorGenerator = false
+newlines.beforeCurlyLambdaParams = multilineWithCaseOnly`
 const scalaGitignoreTemplate = `target
 .metals
 metals.sbt
