@@ -230,7 +230,8 @@ func main() {
 		ensureFileNotExists(logger, projectName)
 
 		projectDir := path.Join(projectName, "project")
-		srcDir := path.Join(projectName, "src/main/scala", scalaRootPackage, projectName)
+		pkgDir := strings.Join(strings.Split(scalaRootPackage, "."), "/")
+		srcDir := path.Join(projectName, "src/main/scala", pkgDir, projectName)
 		os.MkdirAll(projectDir, 0744)
 		os.MkdirAll(srcDir, 0744)
 		
