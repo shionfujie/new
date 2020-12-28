@@ -92,7 +92,7 @@ const puppeteerMainFileTemplate = `const puppeteer = require('puppeteer');
 	await browser.close();
 })();`
 
-const scalaRootPackage = "io.s5"
+const scalaRootPackage = "io.s19f"
 const buildSbtTemplate = `scalaVersion := "2.12.12"`
 const buildPropertiesTemplate = `sbt.version=1.2.8`
 const projectPluginsSbtTemplate = `initialize ~= (_ => sys.props("scala.repl.maxprintstring") = "0" ) // Sets no limit to print a large string`
