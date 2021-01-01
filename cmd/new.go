@@ -93,14 +93,14 @@ const puppeteerMainFileTemplate = `const puppeteer = require('puppeteer');
 })();`
 
 const scalaRootPackage = "io.s19f"
-const buildSbtTemplate = `scalaVersion := "2.12.12"`
-const buildPropertiesTemplate = `sbt.version=1.2.8`
+const buildSbtTemplate = `scalaVersion := "2.13.4"`
+const buildPropertiesTemplate = `sbt.version=1.4.4`
 const projectPluginsSbtTemplate = `initialize ~= (_ => sys.props("scala.repl.maxprintstring") = "0" ) // Sets no limit to print a large string`
 const scalaEntryFileTemplate = `package %s.%s
 
 object %s
 `
-const scalafmtConfTemplate = `version = "2.7.4"
+const scalafmtConfTemplate = `version = "22.7.5"
 align.preset=most
 maxColumn = 200
 newlines.avoidForSimpleOverflow=[tooLong]
