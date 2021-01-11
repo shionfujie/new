@@ -179,27 +179,28 @@ func main() {
 		logger.SetPrefix("new chrome-x: ")
 		logger.FatalfIf(len(os.Args) < 3, "Extension name argument expected")
 
-		n := os.Args[2]
-		ensureFileNotExists(logger, n)
+		xName := os.Args[2]
+		projectDir := path.Join(os.Getenv("CHROME_HOME"), "src/x", xName)
+		ensureFileNotExists(logger, projectDir)
 
-		jsDir := n + "/js/"
-		imagesDir := n + "/images/"
+		jsDir := path.Join(projectDir, "js")
+		imagesDir := path.Join(projectDir, "images")
 		os.MkdirAll(jsDir, 0744)
 		os.MkdirAll(imagesDir, 0744)
 
-		imagesTemplateDir := os.Getenv("CHROME_HOME") + "/template/images/"
+		imagesTemplateDir := path.Join(os.Getenv("CHROME_HOME"), "template/images")
 		images := []string{"get_started16.png", "get_started32.png", "get_started48.png", "get_started128.png"}
 		for _, name := range images {
-			err := copyFile(imagesDir+name, imagesTemplateDir+name)
-			logger.FatalfIfError(err, "%s: Failed to copy %s to %s: %v\n", n, imagesTemplateDir, imagesDir, err)
+			err := copyFile(path.Join(imagesDir, name), path.Join(imagesTemplateDir, name))
+			logger.FatalfIfError(err, "%s: Failed to copy %s to %s: %v\n", projectDir, imagesTemplateDir, imagesDir, err)
 		}
 
-		json := fmt.Sprintf(chromeXManifestTemplate, n)
-		manifestFile := n + "/manifest.json"
+		json := fmt.Sprintf(chromeXManifestTemplate, xName)
+		manifestFile := projectDir + "/manifest.json"
 		err := ioutil.WriteFile(manifestFile, []byte(json), 0744)
-		logger.FatalfIfError(err, "%s: Failed to create a manifest file for a chrome extension", n)
+		logger.FatalfIfError(err, "%s: Failed to create a manifest file for a chrome extension", xName)
 
-		exec.Command("open", "-a", visualStudioCode, n, manifestFile).Run() // Try to open the project
+		exec.Command("open", "-a", visualStudioCode, projectDir, manifestFile).Run() // Try to open the project
 	case "puppeteer", "chrome-script", "web-script":
 		logger.SetPrefix("new " + subcommand + ": ")
 		logger.FatalfIf(len(os.Args) < 3, "Project name argument expected")
