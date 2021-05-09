@@ -86,8 +86,7 @@ const puppeteerMainFileTemplate = `const puppeteer = require('puppeteer');
 (async () => {
 	const browser = await puppeteer.launch();
 	const page = await browser.newPage();
-
-	console.log("Hello, %s!!!")
+	await page.goto('http://example.com/')
 
 	await browser.close();
 })();`
@@ -201,7 +200,7 @@ func main() {
 		logger.FatalfIfError(err, "%s: Failed to create a manifest file for a chrome extension", xName)
 
 		exec.Command("open", "-a", visualStudioCode, projectDir, manifestFile).Run() // Try to open the project
-	case "puppeteer", "chrome-script", "web-script":
+	case "pptr", "puppeteer", "web-script":
 		logger.SetPrefix("new " + subcommand + ": ")
 		logger.FatalfIf(len(os.Args) < 3, "Project name argument expected")
 
@@ -215,7 +214,7 @@ func main() {
 		logger.FatalfIfError(err, "%s: Failed to create package.json", projectName)
 
 		mainFilePath := path.Join(projectName, "main.js")
-		mainFile := fmt.Sprintf(puppeteerMainFileTemplate, projectName)
+		mainFile := fmt.Sprintf(puppeteerMainFileTemplate)
 		err = ioutil.WriteFile(mainFilePath, []byte(mainFile), 0744)
 		logger.FatalfIfError(err, "%s: Failed to create main.js", projectName)
 
