@@ -80,7 +80,6 @@ const puppeteerPackageJSONTemplate = `{
 	}
 }
 `
-
 const puppeteerMainFileTemplate = `const puppeteer = require('puppeteer');
 
 (async () => {
@@ -113,6 +112,68 @@ metals.sbt
 /project/project
 .bloop
 .DS_Store`
+
+
+const electronPackageJSONTemplate = `{
+    "name": "%s",
+    "version": "0.0.1",
+    "author": "Shion Fujie (https://github.com/shionfujie)",
+    "description": "",
+    "main": "main.js",
+    "scripts": {
+        "start": "electron ."
+    },
+	"devDependencies": {
+		"electron": "latest"
+	}
+}`
+const electronMainJSTemplate = `const { app, BrowserWindow } = require('electron')
+const path = require('path')
+
+(async () => {
+    await app.whenReady()
+    createWindow()
+    app.on('activate', () => {
+        if (BrowserWindow.getAllWindows().length === 0) {
+            createWindow()
+        }
+    })
+})()
+
+app.on('window-all-closed', () => {
+    if (process.platform !== 'darwin') {
+        app.quit()
+    }
+})
+
+function createWindow() {
+    const window = new BrowserWindow({
+        width: 800,
+        height: 600,
+        webPreferences: {
+            preload: path.join(__dirname, 'preload.js')
+        }
+    })
+
+    window.loadFile('index.html')
+}`
+const electronPreloadJSTemplate = `window.addEventListener('DOMContentLoaded', () => {
+    console.log('Hello, Shion!')
+})`
+const electronIndexHtmlTemplate = `<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+    <title>%s</title>
+    <meta
+      http-equiv="Content-Security-Policy"
+      content="script-src 'self' 'unsafe-inline';"
+    />
+  </head>
+  <body>
+    <h1>Hello, Shion!</h1>
+  </body>
+</html>`
 
 func main() {
 	logger := log.New(os.Stdout, "new: ", 0)
@@ -225,7 +286,6 @@ func main() {
 		logger.SetPrefix("new " + subcommand + ": ")
 		logger.FatalfIf(len(os.Args) < 3, "Project name argument expected")
 
-		
 		projectName := os.Args[2]
 		ensureFileNotExists(logger, projectName)
 
@@ -234,19 +294,19 @@ func main() {
 		srcDir := path.Join(projectName, "src/main/scala", pkgDir, projectName)
 		os.MkdirAll(projectDir, 0744)
 		os.MkdirAll(srcDir, 0744)
-		
+
 		buildSbtPath := path.Join(projectName, "build.sbt")
 		err := ioutil.WriteFile(buildSbtPath, []byte(buildSbtTemplate), 0744)
 		logger.FatalfIfError(err, "Failed to create build.sbt")
-		
+
 		confFilepath := path.Join(projectName, ".scalafmt.conf")
 		err = ioutil.WriteFile(confFilepath, []byte(scalafmtConfTemplate), 0744)
 		logger.FatalfIfError(err, "Failed to create .scalafmt.conf")
-		
+
 		gitignorePath := path.Join(projectName, ".gitignore")
 		err = ioutil.WriteFile(gitignorePath, []byte(scalaGitignoreTemplate), 0744)
 		logger.FatalfIfError(err, "Failed to create .scalafmt.conf")
-		
+
 		buildPropertiesPath := path.Join(projectDir, "build.properties")
 		err = ioutil.WriteFile(buildPropertiesPath, []byte(buildPropertiesTemplate), 0744)
 		logger.FatalfIfError(err, "Failed to create build.properties")
@@ -262,6 +322,35 @@ func main() {
 		logger.FatalfIfError(err, "Failed to create an entry file: %s", entryFilepath)
 
 		exec.Command("open", "-a", visualStudioCode, projectName, entryFilepath, buildSbtPath).Run()
+	case "electron":
+		logger.SetPrefix("new " + subcommand + ": ")
+		logger.FatalfIf(len(os.Args) < 3, "Project name argument expected")
+
+		projectName := os.Args[2]
+		ensureFileNotExists(logger, projectName)
+		os.Mkdir(projectName, 0744)
+
+		packageJSONPath := path.Join(projectName, "package.json")
+		packageJSON := fmt.Sprintf(electronPackageJSONTemplate, projectName)
+		err := ioutil.WriteFile(packageJSONPath, []byte(packageJSON), 0744)
+		logger.FatalfIfError(err, "%s: Failed to create package.json", projectName)
+
+		mainJSPath := path.Join(projectName, "main.js")
+		mainJS := fmt.Sprintf(electronMainJSTemplate)
+		err = ioutil.WriteFile(mainJSPath, []byte(mainJS), 0744)
+		logger.FatalfIfError(err, "%s: Failed to create main.js", projectName)
+
+		indexHTMLPath := path.Join(projectName, "index.html")
+		indexHTML := fmt.Sprintf(electronIndexHtmlTemplate, projectName)
+		err = ioutil.WriteFile(indexHTMLPath, []byte(indexHTML), 0744)
+		logger.FatalfIfError(err, "%s: Failed to create index.html", projectName)
+
+		preloadJSPath := path.Join(projectName, "preload.js")
+		preloadJS := fmt.Sprintf(electronPreloadJSTemplate)
+		err = ioutil.WriteFile(preloadJSPath, []byte(preloadJS), 0744)
+		logger.FatalfIfError(err, "%s: Failed to create main.js", projectName)
+
+		exec.Command("open", "-a", visualStudioCode, projectName, mainJSPath).Run() // Try to open the project
 	default:
 		logger.Fatalf("%s: No such subcommand", subcommand)
 	}
