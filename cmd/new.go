@@ -177,7 +177,7 @@ const electronIndexHtmlTemplate = `<!DOCTYPE html>
 func main() {
 	logger := log.New(os.Stdout, "new: ", 0)
 
-	Require(logger, len(os.Args) < 2, "No subcommand specified")
+	Require(logger, len(os.Args) > 1, "No subcommand specified")
 	subcommand := os.Args[1]
 	switch subcommand {
 	case "sh":
