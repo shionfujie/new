@@ -11,7 +11,7 @@ import (
 	"log"
 )
 
-const bin = "/Users/shion.t.fujie/Desktop/machinery/bin"
+
 const visualStudioCode = "Visual Studio Code"
 
 const fanfareTemplate = `Have created %s!
@@ -185,7 +185,7 @@ func main() {
 		Require(logger, len(os.Args) > 2, "No file name specified")
 
 		n := os.Args[2]
-		p := path.Join(os.Getenv("SBIN"), n)
+		p := path.Join(os.Getenv("SHIONF_BIN"), n)
 		ensureFileNotExists(logger, p)
 
 		err := ioutil.WriteFile(p, []byte("#!/bin/bash\n\n"), 0744)
