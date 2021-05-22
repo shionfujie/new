@@ -8,8 +8,7 @@ import (
 	"os/exec"
 	"path"
 	"strings"
-
-	"s19f.io/x/log"
+	"log"
 )
 
 const bin = "/Users/shion.t.fujie/Desktop/machinery/bin"
@@ -178,27 +177,27 @@ const electronIndexHtmlTemplate = `<!DOCTYPE html>
 func main() {
 	logger := log.New(os.Stdout, "new: ", 0)
 
-	logger.FatalfIf(len(os.Args) < 2, "No subcommand specified")
+	Require(logger, len(os.Args) < 2, "No subcommand specified")
 	subcommand := os.Args[1]
 	switch subcommand {
 	case "sh":
 		logger.SetPrefix("new sh: ")
-		logger.FatalfIf(len(os.Args) < 3, "No file name specified")
+		Require(logger, len(os.Args) > 2, "No file name specified")
 
 		n := os.Args[2]
 		p := path.Join(os.Getenv("SBIN"), n)
 		ensureFileNotExists(logger, p)
 
 		err := ioutil.WriteFile(p, []byte("#!/bin/bash\n\n"), 0744)
-		logger.FatalfIfError(err, "%s: Failed to create an shell script executable", n)
+		Require(logger, err == nil, "%s: Failed to create an shell script executable", n)
 
-		fmt.Fprintf(logger.O, "A shell script executable has been created at '%s'\n", p) // Prints without the predefined format
+		logger.Printf("A shell script executable has been created at '%s'\n", p) // Prints without the predefined format
 
 		err = exec.Command("open", "-a", visualStudioCode, p).Run()
-		logger.FatalfIfError(err, " %s: Failed to open with %s", n, visualStudioCode)
+		Require(logger, err == nil, " %s: Failed to open with %s", n, visualStudioCode)
 	case "go-cmd":
 		logger.SetPrefix("new go-cmd: ")
-		logger.FatalfIf(len(os.Args) < 3, "No command name specified. Specify a command name.")
+		Require(logger, len(os.Args) > 2, "No command name specified. Specify a command name.")
 
 		cmdName := os.Args[2]
 		ensureFileNotExists(logger, cmdName)
@@ -207,20 +206,20 @@ func main() {
 		os.Chdir(cmdName)
 		goPackage := "s19f.io/cli/" + cmdName
 		err := exec.Command("go", "mod", "init", goPackage).Run()
-		logger.FatalfIfError(err, "%s: Failed to create the GO package '%s'", cmdName, goPackage)
+		Require(logger, err == nil, "%s: Failed to create the GO package '%s'", cmdName, goPackage)
 
 		os.Mkdir("cmd", 0744)
 		os.Chdir("cmd")
 		code := fmt.Sprintf(goMainFileTemplate, cmdName)
 		err = ioutil.WriteFile(cmdName+".go", []byte(code), 0744)
-		logger.FatalfIfError(err, "%s: Failed to create a main file at '%s', ")
+		Require(logger, err == nil, "%s: Failed to create a main file at '%s', ", cmdName, cmdName+".go")
 
-		fmt.Fprintln(logger.O, "Have created a command-line project. Strive to code!!!")
+		logger.Println("Have created a command-line project. Strive to code!!!")
 
 		exec.Command("open", "-a", visualStudioCode, "../../"+cmdName, cmdName+".go").Run() // Try to open the project
 	case "chrome-theme":
 		logger.SetPrefix("new chrome-theme: ")
-		logger.FatalfIf(len(os.Args) < 3, "Extension name argument expected")
+		Require(logger, len(os.Args) > 2, "Extension name argument expected")
 
 		themeName := os.Args[2]
 		projectPath := path.Join(os.Getenv("CHROME_HOME"), "src/theme", themeName)
@@ -230,14 +229,14 @@ func main() {
 		manifestPath := path.Join(projectPath, "manifest.json")
 		json := fmt.Sprintf(chromeThemeManifestTemplate, themeName)
 		err := ioutil.WriteFile(manifestPath, []byte(json), 0744)
-		logger.FatalfIfError(err, "%s: Failed to create a manifest file for a chrome extension", themeName)
+		Require(logger, err == nil, "%s: Failed to create a manifest file for a chrome extension", themeName)
 
-		fmt.Fprintf(logger.O, fanfareTemplate, "a chrome theme", projectPath, "Excited to decorate!!!")
+		logger.Printf(fanfareTemplate, "a chrome theme", projectPath, "Excited to decorate!!!")
 
 		exec.Command("open", "-a", visualStudioCode, projectPath, manifestPath).Run() // Try to open the project
 	case "chrome", "chrome-x":
 		logger.SetPrefix("new chrome-x: ")
-		logger.FatalfIf(len(os.Args) < 3, "Extension name argument expected")
+		Require(logger, len(os.Args) > 2, "Extension name argument expected")
 
 		xName := os.Args[2]
 		projectDir := path.Join(os.Getenv("CHROME_HOME"), "src/x", xName)
@@ -252,18 +251,18 @@ func main() {
 		images := []string{"get_started16.png", "get_started32.png", "get_started48.png", "get_started128.png"}
 		for _, name := range images {
 			err := copyFile(path.Join(imagesDir, name), path.Join(imagesTemplateDir, name))
-			logger.FatalfIfError(err, "%s: Failed to copy %s to %s: %v\n", projectDir, imagesTemplateDir, imagesDir, err)
+			Require(logger, err == nil, "%s: Failed to copy %s to %s: %v\n", projectDir, imagesTemplateDir, imagesDir, err)
 		}
 
 		json := fmt.Sprintf(chromeXManifestTemplate, xName)
 		manifestFile := projectDir + "/manifest.json"
 		err := ioutil.WriteFile(manifestFile, []byte(json), 0744)
-		logger.FatalfIfError(err, "%s: Failed to create a manifest file for a chrome extension", xName)
+		Require(logger, err == nil, "%s: Failed to create a manifest file for a chrome extension", xName)
 
 		exec.Command("open", "-a", visualStudioCode, projectDir, manifestFile).Run() // Try to open the project
 	case "pptr", "puppeteer", "web-script":
 		logger.SetPrefix("new " + subcommand + ": ")
-		logger.FatalfIf(len(os.Args) < 3, "Project name argument expected")
+		Require(logger, len(os.Args) > 2, "Project name argument expected")
 
 		projectName := os.Args[2]
 		ensureFileNotExists(logger, projectName)
@@ -272,19 +271,19 @@ func main() {
 		packageJSONPath := path.Join(projectName, "package.json")
 		packageJSON := fmt.Sprintf(puppeteerPackageJSONTemplate, projectName)
 		err := ioutil.WriteFile(packageJSONPath, []byte(packageJSON), 0744)
-		logger.FatalfIfError(err, "%s: Failed to create package.json", projectName)
+		Require(logger, err == nil, "%s: Failed to create package.json", projectName)
 
 		mainFilePath := path.Join(projectName, "main.js")
 		mainFile := fmt.Sprintf(puppeteerMainFileTemplate)
 		err = ioutil.WriteFile(mainFilePath, []byte(mainFile), 0744)
-		logger.FatalfIfError(err, "%s: Failed to create main.js", projectName)
+		Require(logger, err == nil, "%s: Failed to create main.js", projectName)
 
-		fmt.Fprintf(logger.O, fanfareTemplate, "a web script project with Puppeteer", projectName, "Automate everything!!!")
+		logger.Printf(fanfareTemplate, "a web script project with Puppeteer", projectName, "Automate everything!!!")
 
 		exec.Command("open", "-a", visualStudioCode, projectName, mainFilePath).Run() // Try to open the project
 	case "scala", "scala-console":
 		logger.SetPrefix("new " + subcommand + ": ")
-		logger.FatalfIf(len(os.Args) < 3, "Project name argument expected")
+		Require(logger, len(os.Args) > 2, "Project name argument expected")
 
 		projectName := os.Args[2]
 		ensureFileNotExists(logger, projectName)
@@ -297,34 +296,34 @@ func main() {
 
 		buildSbtPath := path.Join(projectName, "build.sbt")
 		err := ioutil.WriteFile(buildSbtPath, []byte(buildSbtTemplate), 0744)
-		logger.FatalfIfError(err, "Failed to create build.sbt")
+		Require(logger, err == nil, "Failed to create build.sbt")
 
 		confFilepath := path.Join(projectName, ".scalafmt.conf")
 		err = ioutil.WriteFile(confFilepath, []byte(scalafmtConfTemplate), 0744)
-		logger.FatalfIfError(err, "Failed to create .scalafmt.conf")
+		Require(logger, err == nil, "Failed to create .scalafmt.conf")
 
 		gitignorePath := path.Join(projectName, ".gitignore")
 		err = ioutil.WriteFile(gitignorePath, []byte(scalaGitignoreTemplate), 0744)
-		logger.FatalfIfError(err, "Failed to create .scalafmt.conf")
+		Require(logger, err == nil, "Failed to create .scalafmt.conf")
 
 		buildPropertiesPath := path.Join(projectDir, "build.properties")
 		err = ioutil.WriteFile(buildPropertiesPath, []byte(buildPropertiesTemplate), 0744)
-		logger.FatalfIfError(err, "Failed to create build.properties")
+		Require(logger, err == nil, "Failed to create build.properties")
 
 		pluginsSbtPath := path.Join(projectDir, "plugins.sbt")
 		err = ioutil.WriteFile(pluginsSbtPath, []byte(projectPluginsSbtTemplate), 0744)
-		logger.FatalfIfError(err, "Failed to create plugins.sbt")
+		Require(logger, err == nil, "Failed to create plugins.sbt")
 
 		entryName := strings.Title(projectName)
 		entryFilepath := path.Join(srcDir, entryName+".scala")
 		entryFile := fmt.Sprintf(scalaEntryFileTemplate, scalaRootPackage, projectName, entryName)
 		err = ioutil.WriteFile(entryFilepath, []byte(entryFile), 0744)
-		logger.FatalfIfError(err, "Failed to create an entry file: %s", entryFilepath)
+		Require(logger, err == nil, "Failed to create an entry file: %s", entryFilepath)
 
 		exec.Command("open", "-a", visualStudioCode, projectName, entryFilepath, buildSbtPath).Run()
 	case "electron":
 		logger.SetPrefix("new " + subcommand + ": ")
-		logger.FatalfIf(len(os.Args) < 3, "Project name argument expected")
+		Require(logger, len(os.Args) > 2, "Project name argument expected")
 
 		projectName := os.Args[2]
 		ensureFileNotExists(logger, projectName)
@@ -333,22 +332,22 @@ func main() {
 		packageJSONPath := path.Join(projectName, "package.json")
 		packageJSON := fmt.Sprintf(electronPackageJSONTemplate, projectName)
 		err := ioutil.WriteFile(packageJSONPath, []byte(packageJSON), 0744)
-		logger.FatalfIfError(err, "%s: Failed to create package.json", projectName)
+		Require(logger, err == nil, "%s: Failed to create package.json", projectName)
 
 		mainJSPath := path.Join(projectName, "main.js")
 		mainJS := fmt.Sprintf(electronMainJSTemplate)
 		err = ioutil.WriteFile(mainJSPath, []byte(mainJS), 0744)
-		logger.FatalfIfError(err, "%s: Failed to create main.js", projectName)
+		Require(logger, err == nil, "%s: Failed to create main.js", projectName)
 
 		indexHTMLPath := path.Join(projectName, "index.html")
 		indexHTML := fmt.Sprintf(electronIndexHtmlTemplate, projectName)
 		err = ioutil.WriteFile(indexHTMLPath, []byte(indexHTML), 0744)
-		logger.FatalfIfError(err, "%s: Failed to create index.html", projectName)
+		Require(logger, err == nil, "%s: Failed to create index.html", projectName)
 
 		preloadJSPath := path.Join(projectName, "preload.js")
 		preloadJS := fmt.Sprintf(electronPreloadJSTemplate)
 		err = ioutil.WriteFile(preloadJSPath, []byte(preloadJS), 0744)
-		logger.FatalfIfError(err, "%s: Failed to create main.js", projectName)
+		Require(logger, err == nil, "%s: Failed to create main.js", projectName)
 
 		exec.Command("open", "-a", visualStudioCode, projectName, mainJSPath).Run() // Try to open the project
 	default:
@@ -378,7 +377,13 @@ func copyFile(dst, src string) error {
 	return nil
 }
 
-func ensureFileNotExists(logger *log.SLogger, name string) {
+func Require(logger *log.Logger, cond bool, msg string, v ...interface{}) {
+	if !cond {
+		logger.Fatalf(msg, v...)
+	}
+}
+
+func ensureFileNotExists(logger *log.Logger, name string) {
 	s, _ := os.Stat(name)
-	logger.FatalfIf(s != nil, "%s: File exists", name)
+	Require(logger, s == nil, "%s: File exists", name)
 }
